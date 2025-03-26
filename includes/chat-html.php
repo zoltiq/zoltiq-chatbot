@@ -52,7 +52,7 @@ function chatbot_enqueue_html() {
 	));
     
     // Retrieve the URL for the ES6 module
-    $module_url = plugins_url('assets/js/chat.bundle.es.js?27', dirname(__FILE__, 1));
+    $module_url = plugins_url('assets/js/chat.bundle.es.js?31', dirname(__FILE__, 1));
     
     $inline_module_script = "
     	import { createChat } from '{$module_url}';
@@ -66,7 +66,7 @@ function chatbot_enqueue_html() {
     // Inject iframe into the footer
     add_action('wp_footer', function() use ($inline_module_script, $styles, $display_chatbot) {
         
-        $srcdoc = htmlspecialchars("<link rel='stylesheet' href='" .  plugins_url('assets/css/chat.css?12', dirname(__FILE__, 1)) . "' type='text/css'>
+        $srcdoc = htmlspecialchars("<link rel='stylesheet' href='" .  plugins_url('assets/css/widget.min.css?13', dirname(__FILE__, 1)) . "' type='text/css'>
             <script type='module'>" . $inline_module_script . "</script>", 
             ENT_QUOTES, 
             'UTF-8'
