@@ -43,14 +43,14 @@ function chatbot_admin_enqueue_scripts($hook) {
         'chatbot-settings-admin-style',
         plugins_url('assets/css/admin-panel.min.css', dirname(__FILE__, 1)),
         array(),
-        '1.0.4'
+        '1.0.8'
     );
 
     wp_register_script(
         'chatbot-settings-admin-script',
         plugins_url('assets/js/admin-panel.min.js', dirname(__FILE__, 1)),
         array(), 
-        '1.2.6',
+        '1.3.7',
         true
     );
 
@@ -66,7 +66,16 @@ function chatbot_admin_enqueue_scripts($hook) {
 
     $options['locale'] = $lang_code;
 	$options['nonce'] = wp_create_nonce('chatbot_admin');
+    $pages = get_pages(); 
 
+    foreach ($pages as $page) {
+        $options['pages'][] = array(
+            'title' => esc_html($page->post_title),
+            'slug'  => esc_html($page->post_name),
+			'chatbot_enable' => $page->chatbot_enable
+        );
+    }
+ 
     wp_localize_script('chatbot-settings-admin-script', 'chatParams', $options);
     wp_enqueue_script('chatbot-settings-admin-script');
 }
@@ -90,6 +99,4 @@ function chatbot_settings_page_html() {
     ?>
     <div id="chatbotSettings"></div>
     <?php
-	
-
 }

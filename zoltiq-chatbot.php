@@ -9,7 +9,8 @@
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
 */
 
-require 'vendor/autoload.php';
+//require 'vendor/autoload.php';
+require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 require_once plugin_dir_path(__FILE__) . 'includes/settings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/settings-html.php';
 require_once plugin_dir_path(__FILE__) . 'includes/embedding.php';
@@ -27,7 +28,6 @@ defined( 'WPINC' ) || die;
 if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
-
 
 
 /* Initialize plugin update checker */
@@ -53,33 +53,12 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'chat_plugin_acti
 
 
 /**
- * Adds necessary columns to the wp_posts table upon plugin activation.
- *
- * Ensures that the 'embedding' and 'embedding_modified' columns exist in the wp_posts table,
- * creating them if they are missing.
+ * Initializes the chat plugin functionality by adding a full-text index
  */
 function initialize_chat_plugin() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'posts';
-
-    /* Check if the necessary columns already exist */
-    $columns = $wpdb->get_results("SHOW COLUMNS FROM `$table_name` WHERE Field IN ('embedding', 'embedding_modified')");
-    $existing_columns = array();
-    foreach ($columns as $column) {
-        $existing_columns[] = $column->Field;
-    }
-    
-    /* Add 'embedding' column if it does not exist */
-    if (!in_array('embedding', $existing_columns)) {
-        $wpdb->query("ALTER TABLE `$table_name` ADD COLUMN `embedding` VECTOR(1536) NOT NULL");
-    }
-    
-    /* Add 'embedding_modified' column if it does not exist */
-    if (!in_array('embedding_modified', $existing_columns)) {
-        $wpdb->query("ALTER TABLE `$table_name` ADD COLUMN `embedding_modified` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00'");
-    } 
-
-
-
+  
+    $wpdb->query("ALTER TABLE `$table_name` ADD FULLTEXT `wp_fulltext` (`post_title`, `post_content`)");
 }
 register_activation_hook(__FILE__, 'initialize_chat_plugin');

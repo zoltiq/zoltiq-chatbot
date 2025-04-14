@@ -19,13 +19,12 @@ Chatbot Zoltiq leverages the OpenAI platform using large LLM model models, bring
 
 *   WordPress 6.3 lub or higher
 *   WooCommerce 7.0 or higher
-*   Wersja PHP 7.4 or higher
-*   MariaDB 11.7.1 or higher
+*   PHP 7.4 or higher
+*   MySQL 5.7 or higher
 
 ### Installing
 
 1.  Get an API key by registering at  [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys).
 2.  Install and activate the Zoltiq Chatbot plugin.
 3.  Go to the plugin settings (Settings &gt; API/Model), enter your API key and save your settings.
-4.  Click the “Embed product descriptions” button.
-5.  Customize the appearance of the Chatbot widget and other parameters as needed.
+4.  Customize the appearance of the Chatbot widget and other parameters as needed.

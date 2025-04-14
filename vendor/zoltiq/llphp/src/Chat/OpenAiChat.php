@@ -14,26 +14,38 @@ class OpenAIChat implements ChatInterface
 {
 
     private ?CreateResponse $lastResponse = null;
-
     private int $totalTokens = 0;
-
     private Message $systemMessage;
 
     /** @var FunctionInfo[] */
     private array $tools = [];
 
     public ?FunctionInfo $lastFunctionCalled = null;
-
     public ?FunctionInfo $requiredFunction = null;
+	public $currentMessage = '';
 
-    public function __construct(private ?Client $client = null, private ?string $model = null, private ?HistoryChat $historyChat = null)
-    {
+    /**
+     * Constructor for OpenAIChat.
+     *
+     * @param Client|null $client
+     * @param string|null $model
+     * @param float|null $temperature
+     * @param HistoryChat|null $historyChat
+     */
 
-    }
+    public function __construct(
+        public ?Client $client = null,
+        public ?string $model = null,
+        public ?float $temperature = null,
+        public ?HistoryChat $historyChat = null
+    ) {}
 
 
     /**
-     * We only need one system message in most of the case
+     * Sets the system message which will act as initial context for the chat.
+     *
+     * @param string $message 
+     * @return void
      */
     public function setSystemMessage(string $message): void
     {
@@ -45,7 +57,9 @@ class OpenAIChat implements ChatInterface
 	
 	
 	/**
-     * We get system message in most of the case
+     * Retrieves the current system message.
+     *
+     * @return Message|null
      */
     public function getSystemMessage(): ?Message
     {
@@ -53,10 +67,13 @@ class OpenAIChat implements ChatInterface
     }
 
     /**
-     * @param  Message[]  $messages
+     * Builds the arguments array for the OpenAI API based on provided messages and tool settings.
+     *
+     * @param array $messages
+     * @param bool|null $addTools
      * @return array<string, mixed>
      */
-    private function getOpenAiArgs(array $messages): array
+    private function getOpenAiArgs(array $messages, ?bool $addTools = false): array
     {
         // The system message should be the first
         $finalMessages = [];
@@ -65,9 +82,17 @@ class OpenAIChat implements ChatInterface
         }
 
         $finalMessages = array_merge($finalMessages, $messages);
+        
+        $openAiArgs = [
+            'model' => $this->model,
+            'temperature' => $this->temperature,
+            'messages' => $finalMessages
+        ];
 
-        $openAiArgs = ['model' => $this->model, 'messages' => $finalMessages];
-
+        if(!$addTools) {
+            return $openAiArgs;
+        }
+                
         if ($this->tools !== []) {
             $openAiArgs['tools'] = ToolFormatter::formatFunctionsToOpenAITools($this->tools);
         }
@@ -78,16 +103,22 @@ class OpenAIChat implements ChatInterface
 
         return $openAiArgs;
     }
-   
-    
-    public function generateTextOrReturnFunctionCalled(string $prompt): string|FunctionInfo
+
+  
+    /**
+     * Generates a response from OpenAI or returns a function call if applicable.
+     *
+     * @param string $prompt
+     * @return array{name: string, content: string}|FunctionInfo
+     */
+    public function generateTextOrReturnFunctionCalled(string $prompt): array|FunctionInfo
     {
         $this->lastFunctionCalled = null;
          
         $messages = isset($this->historyChat) ? $this->historyChat->getMessageFromHistory() : array(Message::user($prompt));
-        $openAiArgs = $this->getOpenAiArgs($messages);
- 
-		$answer = $this->client->chat()->create($openAiArgs);
+        $openAiArgs = $this->getOpenAiArgs($messages, true);
+
+        $answer = $this->client->chat()->create($openAiArgs);
 		
         $this->lastResponse = $answer;
         $this->totalTokens += $answer->usage->totalTokens ?? 0;
@@ -101,14 +132,24 @@ class OpenAIChat implements ChatInterface
         if ($this->lastFunctionCalled instanceof FunctionInfo) {
             return $this->lastFunctionCalled;
         }
-
-        return $answer->choices[0]->message->content ?? '';
+        
+        return [
+            'name' => 'Text',
+            'content' => $answer->choices[0]->message->content ?? ''
+        ];
+        
     }
 
-
+    /**
+     * Generates a chat response based on the provided messages.
+     *
+     * @param array $messages
+     * @return string
+     */
     public function generateChat(array $messages): string
     {
         $openAiArgs = $this->getOpenAiArgs($messages);
+
         $answer = $this->client->chat()->create($openAiArgs);
         $this->lastResponse = $answer;
         $this->totalTokens += $answer->usage->totalTokens ?? 0;
@@ -116,6 +157,12 @@ class OpenAIChat implements ChatInterface
     }
     
     
+    /**
+     * Extracts the tools to call from the OpenAI response.
+     *
+     * @param CreateResponse $answer
+     * @return FunctionInfo[]
+     */
     private function getToolsToCall(CreateResponse $answer): array
     {
         $functionInfos = [];
@@ -132,13 +179,23 @@ class OpenAIChat implements ChatInterface
         return $functionInfos;
     }
    
-
+    /**
+     * Adds a new tool (function) that can be called by the OpenAI API.
+     *
+     * @param FunctionInfo $functionInfo
+     * @return void
+     */
     public function addTool(FunctionInfo $functionInfo): void
     {
         $this->tools[] = $functionInfo;
     }
     
     /**
+     * Retrieves a FunctionInfo object by its name.
+     *
+     * @param string $functionName
+     * @param string $toolCallId
+     * @return FunctionInfo 
      * @throws Exception
      */
     private function getFunctionInfoFromName(string $functionName, string $toolCallId): FunctionInfo

@@ -20,10 +20,6 @@ function handle_ajax_run_embedding() {
 }
 add_action('wp_ajax_run_embedding', 'handle_ajax_run_embedding');
 
-//************************* PONIŻSZA LINIA MUSI BYĆ USUNIĘTA NA PRODUKCJI!!!!!! ********************************************
-// DRUGA MODYFIKACJA JEST W PLIKU:  admin-ajax.php  w linii 28
-add_action('wp_ajax_nopriv_run_embedding', 'handle_ajax_run_embedding'); 
-
 
 /**
  * Runs the embedding generation process.

@@ -15,15 +15,15 @@ function check_minimum_db_version() {
 	$err = false;
 	$info_db = [];
 	
-	if (stripos($db_vendor, 'MariaDB') !== false && version_compare( $db_version, '11.7.1', '<' ) ) {
+	if (stripos($db_vendor, 'MariaDB') !== false && version_compare( $db_version, '10.5', '<' ) ) {
 		$info_db['db_engine'] = 'MariaDB';
 		$info_db['db_version'] = $db_version;
-		$info_db['db_required_version'] = '11.7.1';
+		$info_db['db_required_version'] = '10.5';
 		$err = true;
-	} else if (stripos($db_vendor, 'MySQL') !== false && version_compare( $db_version, '9.0.0', '<' )) {
+	} else if (stripos($db_vendor, 'MySQL') !== false && version_compare( $db_version, '5.7', '<' )) {
 		$info_db['db_engine'] = 'MySQL';
 		$info_db['db_version'] = $db_version;
-		$info_db['db_required_version'] = '9.0.0';
+		$info_db['db_required_version'] = '5.7';
 		$err = true;
 	};
 	
@@ -31,7 +31,7 @@ function check_minimum_db_version() {
 		add_settings_error(
 			'chatbot_settings_messages', 
 			'chatbot_error',            
-			'Wymagana minimalna wersja bazy danych: '. $info_db['db_engine'] .' '. $info_db['db_required_version'] .'. Twoja wersja: ' . $info_db['db_version'] ,
+			'Required minimum database version: '. $info_db['db_engine'] .' '. $info_db['db_required_version'] .'. Your version: ' . $info_db['db_version'] ,
 			'error'                   
 		);
 	}

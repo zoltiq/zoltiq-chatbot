@@ -1,5 +1,5 @@
 <?php
-require_once plugin_dir_path(__FILE__) . '/tools/WooCommerceAiTool.php';
+require_once plugin_dir_path(__FILE__) . '/tools/ProductListTool.php';
 
 use LLphp\Chat\HistoryChat;
 use LLphp\Chat\OpenAIChat;
@@ -17,31 +17,38 @@ function init_chatbot() {
    global $chat, $historyChat;
 
    /* Initialize HistoryChat with a maximum of 10 iterations */
-   $historyChat = new HistoryChat(10, 'save_message_to_transient', 'get_chat_history_from_transient');
+   $historyChat = new HistoryChat(10, 'save_msg_to_transient', 'get_msg_history_from_transient', 'clear_msg_history_from_transient');
 
    /* Retrieve the API key from WordPress options and create an OpenAI client */
    $apiKey = esc_attr(get_option('chatbot_api_key', ''));
-   $client = OpenAI::client($apiKey);
 
    /* Load default options and merge them with any saved options */
    $default_options = require plugin_dir_path(__FILE__) . 'default-options.php';
    $options = get_option('chatbot_options', $default_options);
 
    /* Create an instance of OpenAIChat with the chosen model and history handler*/
-   $chat = new OpenAIChat($client, $options['model_choice'], $historyChat);
+   $chat = new OpenAIChat(OpenAI::client($apiKey), $options['model_choice'], $options['temperature'], $historyChat);
+   
+ 
    /* Set the system prompt for the chat session */
    $chat->setSystemMessage($options['prompt_system']);
 
    /* Define a parameter representing the user's query */
-   $user_query = new Parameter('user_query', 'string', 'User Query');
+   $keywords = new Parameter('keywords', 'string', 'Słowa kluczowe z nazwy lub opisu produktu, w przypadku braku słowa kluczowego poproś o sprecyzowanie pytania');
+   $limit = new Parameter('limit', 'integer', 'Maksymalna liczba produktów do zwrócenia');
+   $price_min = new Parameter('price_min', 'number', 'Minimalna cena produktu');
+   $price_max = new Parameter('price_max', 'number', 'Maksymalna cena produktu');
+   $rating_min = new Parameter('rating_min', 'number', 'Minimalna ocena produktu');
+   $rating_max = new Parameter('rating_max', 'number', 'Maksymalna ocena produktu');
+   $promotional = new Parameter('promotional', 'boolean', 'Określa, czy wyszukiwać tylko produkty w cenach promocyjnych (obniżkach cen). Ustaw na true, aby zwracać tylko produkty w cenach promocyjnych');
    
-   /* Create a FunctionInfo object for a tool that searches for products by RAG */
+   /* Create a FunctionInfo object for a tool that searches for products by database */
    $function = new FunctionInfo(
-      'search_product_by_rag',
-      new WooCommerceAiTool($client), 
-      'Pobiera odpowiednie fragmenty dokumentacji na podstawie zapytania z RAG.',
-      [$user_query],
-      [$user_query]
+      'search_product_by_database',
+      new ProductListTool($chat), 
+      'Wyszukuje odpowiednie podukty w bazie danych na podstawie zapytania.',
+      [$keywords, $limit, $promotional, $price_min, $price_max, $rating_min, $rating_max],
+      [$keywords]
    );
 
    /* Add the tool function to the chat system */
@@ -63,47 +70,46 @@ function chatbot_request() {
    $json = file_get_contents('php://input');
    $data = json_decode($json, true);
 
-   $message = sanitize_text_field($data['chatInput']);
+   $chat->currentMessage = sanitize_text_field($data['chatInput']);
     
-   if (!$message) {
+   if (!$chat->currentMessage) {
       wp_send_json_error('Invalid message');
    }
 
    /* Add the user's message to the chat history */
-   $historyChat->addMessageToHistory(Message::user($message));
+   $historyChat->addMessageToHistory(Message::user($chat->currentMessage));
    
    try {
 		/* Generate a response from the chatbot or determine if a tool function should be called */
-      $stringOrFunctionInfo = $chat->generateTextOrReturnFunctionCalled($message);
+      $stringOrFunctionInfo = $chat->generateTextOrReturnFunctionCalled($chat->currentMessage);
 
 		/* If a tool function is requested, execute it and handle its result */
       if ($stringOrFunctionInfo instanceof FunctionInfo) {
 		   
          /* Run the requested function/tool */
-         $content = FunctionRunner::run($stringOrFunctionInfo);
-     
-		   /* Add a message indicating that the assistant is requesting tool results */
-         $historyChat->addMessageToHistory(
-            Message::assistantAskingTools([$chat->lastFunctionCalled->asToolCallObject()])
-         );
-		   
-          /* Add the result from the tool to the chat history */
-         $toHistory = Message::toolResult($content, $stringOrFunctionInfo->getToolCallId());
-		   $historyChat->addMessageToHistory($toHistory);
-		   
-         /* Generate a final chat response using the updated history */
-         $stringOrFunctionInfo = $chat->generateChat($historyChat->getMessageFromHistory());
-	   } 
+         $stringOrFunctionInfo = FunctionRunner::run($stringOrFunctionInfo);
+     	} else {
+         $historyChat->addMessageToHistory(Message::assistant($stringOrFunctionInfo['content']));
+      } 
+
    } catch(Exception $e) {
 	   wp_send_json_error(["message" => 'plug-in error or bad configuration']);
 	   die();
    }
    
    /* If the final output is a simple string, add it to the history and send it as the AJAX response */
-   if (is_string($stringOrFunctionInfo)) {
-      $historyChat->addMessageToHistory(Message::assistant($stringOrFunctionInfo));
-      wp_send_json_success(["message" => $stringOrFunctionInfo]);
+   if (is_array($stringOrFunctionInfo)) {
+      wp_send_json_success($stringOrFunctionInfo);
    }
 }
 add_action('wp_ajax_chatbot_request', 'chatbot_request');
 add_action('wp_ajax_nopriv_chatbot_request', 'chatbot_request');
+
+
+function delete_history() {
+	global $historyChat;
+	$historyChat->deleteMessageHistory();
+	wp_send_json_success();
+}
+add_action('wp_ajax_delete_history', 'delete_history');
+add_action('wp_ajax_nopriv_delete_history', 'delete_history');

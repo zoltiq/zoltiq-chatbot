@@ -2,25 +2,35 @@ const chatbotToggler = document.getElementById("chatbot-toggler");
 const chatbotFrame = document.getElementById("chatbotFrame");
 
 
-// Funkcja tworząca "persistent store" 
+/**
+ * Creates a persistent store for a given key with an initial value.
+ *
+ * This function attempts to retrieve existing data from sessionStorage.
+ * If no data exists, it uses the provided initial value. It returns an
+ * object with methods to get, set, and check existence of the value.
+ *
+ * @param {string} key - The key to store the value under in sessionStorage.
+ * @param {*} initialValue - The initial value to use if none is found.
+ * @returns {object} An object with get, set, and exists functions.
+ */
 function persistentStore(key, initialValue) {
-  // Próba odczytania istniejących danych z sessionStorage
+  
+  // Attempt to read existing data from sessionStorage
   let stored = sessionStorage.getItem(key);
   let value = stored ? JSON.parse(stored) : initialValue;
 
-  // Funkcja aktualizująca wartość i zapisująca ją do sessionStorage
+  // Updates the value and saves it to sessionStorage.
   function set(newValue) {
     value = newValue;
     sessionStorage.setItem(key, JSON.stringify(newValue));
-    // Powiadomienie wszystkich subskrybentów o zmianie
   }
 
-   // Funkcja pobierająca bieżącą wartość
+   // Retrieves the current value.
   function get() {
     return value;
   }
 
-  // Funkcja sprawdzająca, czy dany klucz istnieje w sessionStorage
+  // Checks whether the given key exists in sessionStorage.
   function exists() {
     return sessionStorage.getItem(key) !== null;
   }
@@ -30,20 +40,23 @@ function persistentStore(key, initialValue) {
 
 const isOpenWidget = persistentStore('isOpenWidget', false);
 
+// If the widget open state exists in sessionStorage, use it to open/close the widget accordingly.
 if (isOpenWidget.exists()) {
 	let state = isOpenWidget.get();
 	openWidget(state);
 } 
 
-       
+// If the chatbotFrame is currently visible, add the "show-chatbot" class to the toggler.       
 if(chatbotFrame.style.display === "block") chatbotToggler.classList.add("show-chatbot");
-        
+
+// Add a click event listener to the chatbot toggler.        
 chatbotToggler.addEventListener("click", () => {
 	let state = (chatbotFrame.style.display === "none") ? true : false;
 	openWidget(state)
 	isOpenWidget.set(state);
 });
- 
+
+// Listen for messages from the chatbot iframe to close the widget. 
 window.addEventListener("message", (e) => {
   	if (e.data === "close_chatbot") {
 		openWidget(false)
@@ -51,7 +64,13 @@ window.addEventListener("message", (e) => {
    }
 });
 
-
+/**
+ * Opens or closes the chatbot widget based on the provided state.
+ *
+ * If state is true, the widget is opened; otherwise, it is closed.
+ *
+ * @param {boolean} state - True to open the widget, false to close it.
+ */
 function openWidget(state) {
 	if (state) {
 		chatbotToggler.classList.add("show-chatbot");

@@ -29,7 +29,7 @@ function get_anonymous_user_key() {
  * @param int $max_messages The maximum number of messages to keep in the transient.
  * @return void
  */
-function save_message_to_transient(Message $message, int $max_messages) {
+function save_msg_to_transient(Message $message, int $max_messages) {
    
    /* Retrieve the unique user key */
    $transient_key = 'chatbot_history_' . get_anonymous_user_key();
@@ -52,11 +52,11 @@ function save_message_to_transient(Message $message, int $max_messages) {
 
 
 /**
- * Retrieves the chat history from transient storage for the current anonymous user.
+ * Retrieves the message history from transient storage for the current anonymous user.
  *
- * @return array The chat history as an associative array.
+ * @return array The message history as an associative array.
  */
-function get_chat_history_from_transient() {
+function get_msg_history_from_transient() {
    $user_key = get_anonymous_user_key();
    $transient_key = 'chatbot_history_' . $user_key;
 
@@ -65,11 +65,11 @@ function get_chat_history_from_transient() {
 
 
 /**
- * Clears the chat history stored in transient storage for the current anonymous user.
+ * Clears the message history stored in transient storage for the current anonymous user.
  *
  * @return void
  */
-function clear_chat_history_from_transient() {
+function clear_msg_history_from_transient() {
    $user_key = get_anonymous_user_key();
    $transient_key = 'chatbot_history_' . $user_key;
    delete_transient($transient_key);

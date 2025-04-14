@@ -9,22 +9,28 @@ use LLphp\Chat\Message;
 interface ChatInterface
 {
     /**
-     * We only need one system message in most of the case
+     * Sets the system message which will act as initial context for the chat.
      */
     public function setSystemMessage(string $message): void;
 
     /**
-     * We get system message in most of the case
+     * Retrieves the current system message.
      */
     public function getSystemMessage(): ?Message;
 
     /**
-     * @param string $prompt
+     * Generates a response from OpenAI or returns a function call if applicable.
      */
-    public function generateTextOrReturnFunctionCalled(string $prompt): string|FunctionInfo;
+    public function generateTextOrReturnFunctionCalled(string $prompt): array|FunctionInfo;
     
+    /**
+     * Generates a chat response based on the provided messages.
+     */
     public function generateChat(array $messages): string;
 
+    /**
+     * Adds a new tool (function) that can be called by the OpenAI API.
+     */
     public function addTool(FunctionInfo $functionInfo): void;
     
 }

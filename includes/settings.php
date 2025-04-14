@@ -15,13 +15,14 @@ function handle_ajax_save_options() {
    $res = json_decode($json, true);
 	
 	if (!isset($res['security']) || !wp_verify_nonce($res['security'], 'chatbot_admin')) {
-        wp_send_json_error(['message' => 'Security check failed'], 403);
-    }	
+      wp_send_json_error(['message' => 'Security check failed'], 403);
+   }	
 
 	$data = $res['data'];
 	
 	$options_keys = [
 		'model_choice',
+		'temperature',
 		'title',
 		'start_status',
 		'initial_greeting',
@@ -29,7 +30,9 @@ function handle_ajax_save_options() {
 		'image_upload',
 		'emoji',
 		'input_placeholder',
-		'styles'
+		'styles',
+		'tools',
+		'disable_chatbot_pages'
 	];
 
 	$options = [];
@@ -48,6 +51,7 @@ function handle_ajax_save_options() {
 		'hover_button_color',
 		'cancel_btn_file_color', 
 		'animation_dot_color',
+		'header_background_gradient_col',
 		'width_narrow',
 		'height_narrow',
 		'right_margin',
@@ -63,6 +67,11 @@ function handle_ajax_save_options() {
 	foreach ($style_keys as $key) {
 		$options['styles'][$key] = $data['styles'][$key] ?? $default_options[$key];
 	}
+
+	$options['tools'] = [];
+	$options['tools']['product_list'] = $data['tools']['product_list'] ?? $default_options['product_list'];
+	
+	
 		
 	$api_key = $data['api_key'];
 	if(!strpos($api_key, "BLANK_VALUE")){
@@ -74,6 +83,3 @@ function handle_ajax_save_options() {
 	wp_send_json_success();
 }
 add_action('wp_ajax_update', 'handle_ajax_save_options');
-//************************* PONIŻSZA LINIA MUSI BYĆ USUNIĘTA NA PRODUKCJI!!!!!! ********************************************
-// DRUGA MODYFIKACJA JEST W PLIKU:  admin-ajax.php  w linii 28
-add_action('wp_ajax_nopriv_update', 'handle_ajax_save_options'); 
