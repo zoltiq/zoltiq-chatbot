@@ -1,12 +1,13 @@
 <?php
-
+use LLphp\Chat\FunctionInfo\Parameter;
+use LLphp\Chat\FunctionInfo\FunctionInfo;
 use LLphp\Chat\OpenAIChat;
 use LLphp\Chat\Message;
 
 /**
  * Tool for searching products from the WordPress (WooCommerce) database
  */
-class ProductListTool
+class ProductSearchTool
 {
     
    
@@ -41,6 +42,7 @@ class ProductListTool
       ?float $price_max = null,
       ?float $rating_min = null,
       ?float $rating_max = null,
+      ?string $category = ''
    ): array {
    
       global $wpdb;
@@ -68,14 +70,30 @@ class ProductListTool
             ON p.ID = pm_thumb.post_id AND pm_thumb.meta_key = '_thumbnail_id'
          LEFT JOIN $wpdb->posts AS wp2
             ON wp2.ID = pm_thumb.meta_value AND wp2.post_type = 'attachment'
-         WHERE p.post_type = 'product'
-            AND p.post_status = 'publish'
-            AND MATCH(p.post_title, p.post_content) AGAINST(%s)
          ";
 
       
-      $args = [$keywords];
+      if ( !empty($category) ) {
+         $sql .= "
+            LEFT JOIN $wpdb->term_relationships AS tr ON p.ID = tr.object_id
+            LEFT JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+            LEFT JOIN $wpdb->terms AS t ON tt.term_id = t.term_id
+         ";
+      } 
 
+
+      $sql .= "WHERE p.post_type = 'product'
+            AND p.post_status = 'publish'
+            AND MATCH(p.post_title, p.post_content) AGAINST(%s)
+            ";
+ 
+      $args = [$keywords];
+      
+      if ( !empty($category) ) {
+         $sql .= " OR (tt.taxonomy = 'product_cat' AND t.name = %s) ";
+         $args[] = $category;
+      }      
+    
       $params = [
          "CAST(pm_price.meta_value AS DECIMAL(10,2)) >= %f" => $price_min,
          "CAST(pm_price.meta_value AS DECIMAL(10,2)) <= %f" => $price_max,
@@ -254,5 +272,76 @@ class ProductListTool
       }
   
       return $result;
+   }
+
+
+   /**
+     * Static method that creates a FunctionInfo object with tool parameters.
+     *
+     * @param OpenAIChat $chat An instance of the OpenAIChat class that will be passed to the tool.
+     * @return FunctionInfo The configured FunctionInfo object of the product search tool.
+     */
+   public static function getFunctionInfo(OpenAIChat $chat): FunctionInfo
+   {
+      // Create an instance of the tool
+      $tool = new self($chat);
+
+      // We define the parameters of the tool
+      $keywords = new Parameter(
+         'keywords',
+         'string',
+         'Keywords from the name, product description, if there is no keyword, ask to specify the question'
+      );
+      $limit = new Parameter(
+         'limit',
+         'integer',
+         'Maximum number of products to be returned'
+      );
+      $price_min = new Parameter(
+         'price_min',
+         'number',
+         'Minimum product price'
+      );
+      $price_max = new Parameter(
+         'price_max',
+         'number',
+         'Maximum product price'
+      );
+      $rating_min = new Parameter(
+         'rating_min',
+         'number',
+         'Minimum product rating'
+      );
+      $rating_max = new Parameter(
+         'rating_max',
+         'number',
+         'Maximum product rating'
+      );
+      $promotional = new Parameter(
+         'promotional',
+         'boolean',
+         'Set true to search only for products at promotional prices (price < regular price)'
+      );
+      $category = new Parameter(
+         'category',
+         'string',
+         'Keywords category, if the user specifies the phrase "in category [category name]", extract this value and assign it as a parameter'
+      );
+
+      
+      // We create a FunctionInfo object. The FunctionInfo constructor takes:
+      // - the name of the function,
+      // - an instance of the tool (in this case, $tool),
+      // - a description of the function,
+      // - an array of available parameters,
+      // - an array of required parameters (here, for example, only 'keywords')
+      
+      return new FunctionInfo(
+         'search_product_by_database',
+         $tool,
+         'Searches for products in the database based on the query and, optionally, the specified category.',
+         [$keywords, $limit, $promotional, $price_min, $price_max, $rating_min, $rating_max, $category],
+         [$keywords] 
+      );
    }
 }
