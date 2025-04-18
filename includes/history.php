@@ -29,14 +29,16 @@ function get_anonymous_user_key() {
  * @param int $max_messages The maximum number of messages to keep in the transient.
  * @return void
  */
+
+
 function save_msg_to_transient(Message $message, int $max_messages) {
    
    /* Retrieve the unique user key */
    $transient_key = 'chatbot_history_' . get_anonymous_user_key();
 
    /* Retrieve existing chat history */
-   $history = json_decode(get_transient($transient_key), true) ?: [];
-   $history[] =  json_decode(json_encode($message), true);
+   $history = get_transient($transient_key) ?: [];
+   $history[] =  (array)$message;
    
    if (count($history) > $max_messages) {
       $removedMessage = array_shift($history);
@@ -47,7 +49,7 @@ function save_msg_to_transient(Message $message, int $max_messages) {
    }
    
    /* Store the chat history for 1 hour */
-   set_transient($transient_key, json_encode($history), 3600 * 1);
+   set_transient($transient_key, $history, HOUR_IN_SECONDS);
 }
 
 
@@ -60,7 +62,7 @@ function get_msg_history_from_transient() {
    $user_key = get_anonymous_user_key();
    $transient_key = 'chatbot_history_' . $user_key;
 
-   return json_decode(get_transient($transient_key), true) ?: [];
+   return get_transient($transient_key) ?: [];
 }
 
 

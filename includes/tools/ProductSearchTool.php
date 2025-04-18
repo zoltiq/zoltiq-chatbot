@@ -31,8 +31,10 @@ class ProductSearchTool
      * @param float|null  $price_max    Maximum product price
      * @param float|null  $rating_min   Minimum product rating
      * @param float|null  $rating_max   Maximum product rating
+     * @param string      $category     Category products
+     * @param string      $attributes   JSON containing additional attribute filters
      *
-     * @return array{name: string, content: mixed} Processed response containing either product list or a text message
+     * @return array{name: string, content: mixed} Processed response containing either product list or a text message     * 
      */
    public function search_product_by_database(
       string $keywords,
@@ -42,83 +44,28 @@ class ProductSearchTool
       ?float $price_max = null,
       ?float $rating_min = null,
       ?float $rating_max = null,
-      ?string $category = ''
+      ?string $category = '',
+      ?string $attributes = ''
    ): array {
    
-      global $wpdb;
-
+      
       if (!class_exists('WooCommerce')) {
          return new WP_Error('woocommerce_inactive', 'WooCommerce is not active');
       }
-      
-      $sql = "SELECT 
-         p.ID AS id,
-         p.post_content AS description, 
-         p.post_title AS title, 
-         pm_price.meta_value AS price, 
-         pm_reg.meta_value AS regular_price,
-         pm_rating.meta_value AS rating,
-         wp2.guid AS image_url
-         FROM $wpdb->posts AS p
-         LEFT JOIN $wpdb->postmeta AS pm_price 
-            ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
-         LEFT JOIN $wpdb->postmeta AS pm_reg
-            ON p.ID = pm_reg.post_id AND pm_reg.meta_key = '_regular_price'
-         LEFT JOIN $wpdb->postmeta AS pm_rating 
-            ON p.ID = pm_rating.post_id  AND pm_rating.meta_key = '_wc_average_rating'
-         LEFT JOIN $wpdb->postmeta AS pm_thumb
-            ON p.ID = pm_thumb.post_id AND pm_thumb.meta_key = '_thumbnail_id'
-         LEFT JOIN $wpdb->posts AS wp2
-            ON wp2.ID = pm_thumb.meta_value AND wp2.post_type = 'attachment'
-         ";
+
+      $posts = $this->getDatafromDb(
+         $keywords,
+         $limit,
+         $promotional,
+         $price_min,
+         $price_max,
+         $rating_min,
+         $rating_max,
+         $category,
+         $attributes
+      );
 
       
-      if ( !empty($category) ) {
-         $sql .= "
-            LEFT JOIN $wpdb->term_relationships AS tr ON p.ID = tr.object_id
-            LEFT JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-            LEFT JOIN $wpdb->terms AS t ON tt.term_id = t.term_id
-         ";
-      } 
-
-
-      $sql .= "WHERE p.post_type = 'product'
-            AND p.post_status = 'publish'
-            AND MATCH(p.post_title, p.post_content) AGAINST(%s)
-            ";
- 
-      $args = [$keywords];
-      
-      if ( !empty($category) ) {
-         $sql .= " OR (tt.taxonomy = 'product_cat' AND t.name = %s) ";
-         $args[] = $category;
-      }      
-    
-      $params = [
-         "CAST(pm_price.meta_value AS DECIMAL(10,2)) >= %f" => $price_min,
-         "CAST(pm_price.meta_value AS DECIMAL(10,2)) <= %f" => $price_max,
-         "CAST(pm_rating.meta_value AS DECIMAL(3,1)) >= %f" => $rating_min,
-         "CAST(pm_rating.meta_value AS DECIMAL(3,1)) <= %f" => $rating_max,
-      ];
-
-      foreach ($params as $condition => $value) {
-         if ($value !== null) {
-            $sql .= " AND $condition";
-            $args[] = $value;
-         }
-      }
-
-      // Condition for promotional prices: promotional price must be lower than regular price
-      if ($promotional) {
-         $sql .= " AND CAST(pm_price.meta_value AS DECIMAL(10,2)) < CAST(pm_reg.meta_value AS DECIMAL(10,2))";
-      }
-
-      $sql .= " LIMIT %d";
-      $args[] = $limit;
-       
-      $prepared = $wpdb->prepare($sql, ...$args);
-      $posts = $wpdb->get_results($prepared, ARRAY_A);
-
       $formatted_chunks = '';
 
       if(!empty($posts)){
@@ -168,6 +115,139 @@ class ProductSearchTool
 
       return ['name' => 'ProductList', 'content' => $parsed];
    }
+
+
+   
+   private function getDatafromDb(
+      string $keywords,
+      int $limit,
+      bool $promotional,
+      ?float $price_min,
+      ?float $price_max,
+      ?float $rating_min,
+      ?float $rating_max,
+      ?string $category,
+      ?string $attributes
+   ): array
+   {
+      global $wpdb;
+      
+      $dynamicJoins = "";
+      $dynamicConditions = "";
+      $args = [$keywords];
+           
+      
+      $sql = "SELECT 
+         p.ID AS id,
+         p.post_content AS description, 
+         p.post_title AS title, 
+         pm_price.meta_value AS price, 
+         pm_reg.meta_value AS regular_price,
+         pm_rating.meta_value AS rating,
+         wp2.guid AS image_url
+         FROM $wpdb->posts AS p
+         LEFT JOIN $wpdb->postmeta AS pm_price 
+            ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+         LEFT JOIN $wpdb->postmeta AS pm_reg
+            ON p.ID = pm_reg.post_id AND pm_reg.meta_key = '_regular_price'
+         LEFT JOIN $wpdb->postmeta AS pm_rating 
+            ON p.ID = pm_rating.post_id  AND pm_rating.meta_key = '_wc_average_rating'
+         LEFT JOIN $wpdb->postmeta AS pm_thumb
+            ON p.ID = pm_thumb.post_id AND pm_thumb.meta_key = '_thumbnail_id'
+         LEFT JOIN $wpdb->posts AS wp2
+            ON wp2.ID = pm_thumb.meta_value AND wp2.post_type = 'attachment'
+         ";
+
+      
+      
+      // If the attributes parameter (JSON) is passed, we decode it
+      if (!empty($attributes)) {
+         $attrFilters = json_decode($attributes, true);
+
+         if (json_last_error() === JSON_ERROR_NONE && is_array($attrFilters)) {
+            $taxonomy = get_option('chatbot_taxonomy');
+
+            foreach ($attrFilters as $attrKey => $attrValue) {
+            
+               if (isset($taxonomy->taxonomy_map[$attrKey]) && !empty($attrValue)) {
+                  // We create unique aliases for each attribute to avoid conflicts
+                  $aliasSuffix = $attrKey;
+               
+                  $dynamicJoins .= "
+                     LEFT JOIN {$wpdb->term_relationships} AS tr_{$aliasSuffix} 
+                        ON p.ID = tr_{$aliasSuffix}.object_id
+                     LEFT JOIN {$wpdb->term_taxonomy} AS tt_{$aliasSuffix} 
+                        ON tr_{$aliasSuffix}.term_taxonomy_id = tt_{$aliasSuffix}.term_taxonomy_id
+                     LEFT JOIN {$wpdb->terms} AS t_{$aliasSuffix} 
+                        ON tt_{$aliasSuffix}.term_id = t_{$aliasSuffix}.term_id
+                  "; 
+               
+                  // We add a condition: the taxonomy must match the given attribute 
+                  // and the term name must be equal to the passed value.
+                  $dynamicConditions .= " AND tt_{$aliasSuffix}.taxonomy = %s AND t_{$aliasSuffix}.name = %s ";
+                  $args[] = $taxonomy->taxonomy_map[$attrKey];
+                  $args[] = $attrValue;
+               }
+            }
+         }
+      }
+
+      // Include dynamic JOINs in the SQL query
+      $sql .= $dynamicJoins;
+
+      if ( !empty($category) ) {
+         $sql .= "
+            LEFT JOIN $wpdb->term_relationships AS tr ON p.ID = tr.object_id
+            LEFT JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+            LEFT JOIN $wpdb->terms AS t ON tt.term_id = t.term_id
+         ";
+      } 
+
+
+      $sql .= "WHERE p.post_type = 'product'
+            AND p.post_status = 'publish'
+            AND MATCH(p.post_title, p.post_content) AGAINST(%s)
+            ";
+       
+      
+      // Include dynamic conditions, if generated
+      if (!empty($dynamicConditions)) {
+         $sql .= $dynamicConditions;
+      }
+      
+      
+      if ( !empty($category) ) {
+         $sql .= " OR (tt.taxonomy = 'product_cat' AND t.name = %s) ";
+         $args[] = $category;
+      }      
+    
+      $params = [
+         "CAST(pm_price.meta_value AS DECIMAL(10,2)) >= %f" => $price_min,
+         "CAST(pm_price.meta_value AS DECIMAL(10,2)) <= %f" => $price_max,
+         "CAST(pm_rating.meta_value AS DECIMAL(3,1)) >= %f" => $rating_min,
+         "CAST(pm_rating.meta_value AS DECIMAL(3,1)) <= %f" => $rating_max,
+      ];
+
+      foreach ($params as $condition => $value) {
+         if ($value !== null) {
+            $sql .= " AND $condition";
+            $args[] = $value;
+         }
+      }
+
+      // Condition for promotional prices: promotional price must be lower than regular price
+      if ($promotional) {
+         $sql .= " AND CAST(pm_price.meta_value AS DECIMAL(10,2)) < CAST(pm_reg.meta_value AS DECIMAL(10,2))";
+      }
+
+      $sql .= " LIMIT %d";
+      $args[] = $limit;
+       
+      $prepared = $wpdb->prepare($sql, ...$args);
+      $posts = $wpdb->get_results($prepared, ARRAY_A);
+      return $posts;
+   }
+
 
    
    /**
@@ -285,12 +365,13 @@ class ProductSearchTool
    {
       // Create an instance of the tool
       $tool = new self($chat);
+      $taxonomy = get_option('chatbot_taxonomy');
 
       // We define the parameters of the tool
       $keywords = new Parameter(
          'keywords',
          'string',
-         'Keywords from the name, product description, if there is no keyword, ask to specify the question'
+         'Keywords from the name, product description, if there is no keyword, ask to specify the question. Do not add terms related to attributes.'
       );
       $limit = new Parameter(
          'limit',
@@ -327,6 +408,11 @@ class ProductSearchTool
          'string',
          'Keywords category, if the user specifies the phrase "in category [category name]", extract this value and assign it as a parameter'
       );
+      $attributes = new Parameter(
+         'attributes',
+         'string',
+         'Attributes JSON string with product filters. If the user mentions the color of the product in the query, e.g. (“find me a black flashlight”), size (“small”), extract it and add it to this argument. Example: ' . $taxonomy->example  
+         );
 
       
       // We create a FunctionInfo object. The FunctionInfo constructor takes:
@@ -340,7 +426,7 @@ class ProductSearchTool
          'search_product_by_database',
          $tool,
          'Searches for products in the database based on the query and, optionally, the specified category.',
-         [$keywords, $limit, $promotional, $price_min, $price_max, $rating_min, $rating_max, $category],
+         [$keywords, $limit, $promotional, $price_min, $price_max, $rating_min, $rating_max, $category, $attributes],
          [$keywords] 
       );
    }
