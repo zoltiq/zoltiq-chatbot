@@ -366,52 +366,57 @@ class ProductSearchTool
       // Create an instance of the tool
       $tool = new self($chat);
       $taxonomy = get_option('chatbot_taxonomy');
-
-      // We define the parameters of the tool
+	  $options = get_option('chatbot_options');
+      $parameters = $options['tools']['product_list']['parameters'];
+	  
+	  // We define the parameters of the tool
       $keywords = new Parameter(
          'keywords',
          'string',
-         'Keywords from the name, product description, if there is no keyword, ask to specify the question. Do not add terms related to attributes.'
+         $parameters['keywords'] 
       );
       $limit = new Parameter(
          'limit',
          'integer',
-         'Maximum number of products to be returned'
+         $parameters['limit']
+		 
       );
       $price_min = new Parameter(
          'price_min',
          'number',
-         'Minimum product price'
+         $parameters['price_min']
       );
       $price_max = new Parameter(
          'price_max',
          'number',
-         'Maximum product price'
+         $parameters['price_max']
       );
       $rating_min = new Parameter(
          'rating_min',
          'number',
-         'Minimum product rating'
+         $parameters['rating_min']
       );
       $rating_max = new Parameter(
          'rating_max',
          'number',
-         'Maximum product rating'
+         $parameters['rating_max']
       );
       $promotional = new Parameter(
          'promotional',
          'boolean',
-         'Set true to search only for products at promotional prices (price < regular price)'
+         $parameters['promotional']
       );
       $category = new Parameter(
          'category',
          'string',
-         'Keywords category, if the user specifies the phrase "in category [category name]", extract this value and assign it as a parameter'
+         $parameters['category']
       );
       $attributes = new Parameter(
          'attributes',
          'string',
-         'Attributes JSON string with product filters. If the user mentions the color of the product in the query, e.g. (“find me a black flashlight”), size (“small”), extract it and add it to this argument. Example: ' . $taxonomy->example  
+         $parameters['attributes'] . " Example " . $taxonomy->example 
+		// 'Ciąg JSON z filtrami produktów. Jeżeli użytkownik w zapytaniu wspomina o kolorze produktu, np. („znajdź mi czarną latarkę”), lub rozmiar („mały”), wyodrębnij go i dodaj do tego argumentu. Example: ' . $taxonomy->example  
+         //'Attributes JSON string with product filters. If the user mentions the color of the product in the query, e.g. (“find me a black flashlight”), size (“small”), extract it and add it to this argument. Example: ' . $taxonomy->example  
          );
 
       

@@ -43,14 +43,14 @@ function chatbot_admin_enqueue_scripts($hook) {
         'chatbot-settings-admin-style',
         plugins_url('assets/css/admin-panel.min.css', dirname(__FILE__, 1)),
         array(),
-        '1.0.8'
+        '1.0.9'
     );
 
     wp_register_script(
         'chatbot-settings-admin-script',
         plugins_url('assets/js/admin-panel.min.js', dirname(__FILE__, 1)),
         array(), 
-        '1.3.7',
+        '1.4.7',
         true
     );
 
