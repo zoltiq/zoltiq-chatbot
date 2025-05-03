@@ -27,10 +27,10 @@ function Ti() {
 function Di(e) {
   throw new Error("effect_orphan");
 }
-function Ri() {
+function Pi() {
   throw new Error("effect_update_depth_exceeded");
 }
-function Pi(e) {
+function Ri(e) {
   throw new Error("props_invalid_value");
 }
 function Ii() {
@@ -73,12 +73,12 @@ function Ni(e) {
   return M !== null && M.f & X && (re === null ? fo([e]) : re.push(e)), e;
 }
 function ot(e, t) {
-  return P(
+  return R(
     e,
     pe(() => m(e))
   ), t;
 }
-function P(e, t) {
+function R(e, t) {
   return M !== null && hn() && M.f & (X | an) && // If the source was created locally within the current derived, then
   // we allow the mutation.
   (re === null || !re.includes(e)) && Oi(), ar(e, t);
@@ -122,7 +122,7 @@ function je(e, t = null, n) {
       defineProperty(l, c, s) {
         (!("value" in s) || s.configurable === !1 || s.enumerable === !1 || s.writable === !1) && Ii();
         var f = o.get(c);
-        return f === void 0 ? (f = Y(s.value), o.set(c, f)) : P(f, je(s.value, u)), !0;
+        return f === void 0 ? (f = Y(s.value), o.set(c, f)) : R(f, je(s.value, u)), !0;
       },
       deleteProperty(l, c) {
         var s = o.get(c);
@@ -134,9 +134,9 @@ function je(e, t = null, n) {
               /** @type {Source<number>} */
               o.get("length")
             ), d = Number(c);
-            Number.isInteger(d) && d < f.v && P(f, d);
+            Number.isInteger(d) && d < f.v && R(f, d);
           }
-          P(s, F), kn(a);
+          R(s, F), kn(a);
         }
         return !0;
       },
@@ -188,9 +188,9 @@ function je(e, t = null, n) {
           for (var p = s; p < /** @type {Source<number>} */
           d.v; p += 1) {
             var _ = o.get(p + "");
-            _ !== void 0 ? P(_, F) : p in l && (_ = Y(F), o.set(p + "", _));
+            _ !== void 0 ? R(_, F) : p in l && (_ = Y(F), o.set(p + "", _));
           }
-        d === void 0 ? (!h || (E = Te(l, c)) != null && E.writable) && (d = Y(void 0), P(d, je(s, u)), o.set(c, d)) : (h = d.v !== F, P(d, je(s, u)));
+        d === void 0 ? (!h || (E = Te(l, c)) != null && E.writable) && (d = Y(void 0), R(d, je(s, u)), o.set(c, d)) : (h = d.v !== F, R(d, je(s, u)));
         var b = Reflect.getOwnPropertyDescriptor(l, c);
         if (b != null && b.set && b.set.call(f, s), !h) {
           if (i && typeof c == "string") {
@@ -198,7 +198,7 @@ function je(e, t = null, n) {
               /** @type {Source<number>} */
               o.get("length")
             ), y = Number(c);
-            Number.isInteger(y) && y >= g.v && P(g, y + 1);
+            Number.isInteger(y) && y >= g.v && R(g, y + 1);
           }
           kn(a);
         }
@@ -221,7 +221,7 @@ function je(e, t = null, n) {
   );
 }
 function kn(e, t = 1) {
-  P(e, e.v + t);
+  R(e, e.v + t);
 }
 var $n, ur, dr;
 function Zi() {
@@ -257,7 +257,7 @@ function Ke(e, t) {
     return n instanceof Comment && n.data === "" ? /* @__PURE__ */ zt(n) : n;
   }
 }
-function R(e, t = 1, n = !1) {
+function P(e, t = 1, n = !1) {
   let r = e;
   for (; t--; )
     r = /** @type {TemplateNode} */
@@ -426,7 +426,7 @@ function oo(e, t) {
     T
   ), r = { effect: null, ran: !1 };
   n.l.r1.push(r), r.effect = Lt(() => {
-    e(), !r.ran && (r.ran = !0, P(n.l.r2, !0), pe(t));
+    e(), !r.ran && (r.ran = !0, R(n.l.r2, !0), pe(t));
   });
 }
 function so() {
@@ -578,7 +578,7 @@ function xn(e) {
 function Cn(e) {
   fn = e;
 }
-let be = [], Re = 0;
+let be = [], Pe = 0;
 let M = null;
 function ve(e) {
   M = e;
@@ -706,7 +706,7 @@ function it(e) {
   }
 }
 function zr() {
-  Re > 1e3 && (Re = 0, Ri()), Re++;
+  Pe > 1e3 && (Pe = 0, Pi()), Pe++;
 }
 function Lr(e) {
   var t = e.length;
@@ -735,10 +735,10 @@ function _o(e) {
     }
 }
 function go() {
-  if (Ze = !1, Re > 1001)
+  if (Ze = !1, Pe > 1001)
     return;
   const e = be;
-  be = [], Lr(e), Ze || (Re = 0);
+  be = [], Lr(e), Ze || (Pe = 0);
 }
 function Tt(e) {
   ut === Sr && (Ze || (Ze = !0, queueMicrotask(go)));
@@ -791,7 +791,7 @@ function Dr(e) {
     const o = [];
     ut = uo, be = o, Ze = !1, Lr(n);
     var r = e == null ? void 0 : e();
-    return lo(), (be.length > 0 || o.length > 0) && Dr(), Re = 0, r;
+    return lo(), (be.length > 0 || o.length > 0) && Dr(), Pe = 0, r;
   } finally {
     ut = t, be = n;
   }
@@ -867,7 +867,7 @@ function Dt(e, t = !1, n) {
     r2: Y(!1)
   });
 }
-function Rt(e) {
+function Pt(e) {
   const t = T;
   if (t !== null) {
     const a = t.e;
@@ -1012,7 +1012,7 @@ function Ge(e) {
     }
   }
 }
-function Rr(e) {
+function Pr(e) {
   var t = document.createElement("template");
   return t.innerHTML = e, t.content;
 }
@@ -1027,7 +1027,7 @@ function wt(e, t) {
 function W(e, t) {
   var n = (t & Ji) !== 0, r = (t & Xi) !== 0, o, i = !e.startsWith("<!>");
   return () => {
-    o === void 0 && (o = Rr(i ? e : "<!>" + e), n || (o = /** @type {Node} */
+    o === void 0 && (o = Pr(i ? e : "<!>" + e), n || (o = /** @type {Node} */
     /* @__PURE__ */ Xe(o)));
     var a = (
       /** @type {TemplateNode} */
@@ -1095,7 +1095,7 @@ function So(e, { target: t, anchor: n, props: r = {}, events: o, context: i, int
         );
         d.c = i;
       }
-      o && (r.$$events = o), c = e(f, r) || {}, i && Rt();
+      o && (r.$$events = o), c = e(f, r) || {}, i && Pt();
     }), () => {
       var p;
       for (var d of u) {
@@ -1122,7 +1122,7 @@ function Me(e, t, n, r = null, o = !1) {
     })));
   }, c);
 }
-function Pr(e, t) {
+function Rr(e, t) {
   return t;
 }
 function Eo(e, t, n, r) {
@@ -1265,7 +1265,7 @@ function Jt(e, t, n, r, o) {
   var i = e, a = "", u;
   rt(() => {
     a !== (a = t() ?? "") && (u !== void 0 && (_e(u), u = void 0), a !== "" && (u = ye(() => {
-      var l = a + "", c = Rr(l);
+      var l = a + "", c = Pr(l);
       wt(
         /** @type {TemplateNode} */
         /* @__PURE__ */ Xe(c),
@@ -1299,13 +1299,13 @@ function To(e) {
   return t;
 }
 function Do(e, t) {
-  var n = e.__className, r = Ro(t);
+  var n = e.__className, r = Po(t);
   (n !== r || cr) && (t == null ? e.removeAttribute("class") : e.className = r, e.__className = r);
 }
-function Ro(e) {
+function Po(e) {
   return e ?? "";
 }
-function Po(e, t, n) {
+function Ro(e, t, n) {
   if (n) {
     if (e.classList.contains(t)) return;
     e.classList.add(t);
@@ -1394,7 +1394,7 @@ function Xt(e, t, n) {
     else {
       var o = !0;
       r.unsubscribe = Ar(e, (i) => {
-        o ? r.source.v = i : P(r.source, i);
+        o ? r.source.v = i : R(r.source, i);
       }), o = !1;
     }
   return m(r.source);
@@ -1442,7 +1442,7 @@ function q(e, t, n, r) {
     r
   ) : d = /** @type {V} */
   r), d);
-  c === void 0 && r !== void 0 && (f && i && Pi(), c = _(), f && f(c));
+  c === void 0 && r !== void 0 && (f && i && Ri(), c = _(), f && f(c));
   var b;
   if (i)
     b = () => {
@@ -1482,7 +1482,7 @@ function q(e, t, n, r) {
   return o || (A.equals = ln), function(z, ee) {
     if (arguments.length > 0) {
       const ge = ee ? m(A) : i && a ? je(z) : z;
-      return A.equals(ge) || (E = !0, P(C, ge), p && d !== void 0 && (d = ge), pe(() => m(A))), z;
+      return A.equals(ge) || (E = !0, R(C, ge), p && d !== void 0 && (d = ge), pe(() => m(A))), z;
     }
     return m(A);
   };
@@ -1585,12 +1585,14 @@ const ze = Fo("messages", []), Uo = {
   en: {
     "tooltip.clear_history_msg": "Clear conversation history",
     "tooltip.minimize": "Minimize",
-    "msg.error_loading_component": "Error loading component"
+    "msg.error_loading_component": "Error loading component",
+    "tool.price": "Price"
   },
   pl: {
     "tooltip.clear_history_msg": "Wyczyść historię rozmowy",
     "tooltip.minimize": "Minimalizuj",
-    "msg.error_loading_component": "Błąd ładowania komponentu"
+    "msg.error_loading_component": "Błąd ładowania komponentu",
+    "tool.price": "Cena"
   }
 }, Or = pn("en");
 function qo(e, t, n) {
@@ -1618,7 +1620,7 @@ function G(e, t, n) {
     writable: !0
   }) : e[t] = n, e;
 }
-var Pt, w, Vr, Je, Fr, Rn, kt = {}, Ur = [], Wo = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
+var Rt, w, Vr, Je, Fr, Pn, kt = {}, Ur = [], Wo = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
 function ce(e, t) {
   for (var n in t) e[n] = t[n];
   return e;
@@ -1630,7 +1632,7 @@ function qr(e) {
 function Zt(e, t, n) {
   var r, o, i, a = {};
   for (i in t) i == "key" ? r = t[i] : i == "ref" ? o = t[i] : a[i] = t[i];
-  if (arguments.length > 2 && (a.children = arguments.length > 3 ? Pt.call(arguments, 2) : n), typeof e == "function" && e.defaultProps != null) for (i in e.defaultProps) a[i] === void 0 && (a[i] = e.defaultProps[i]);
+  if (arguments.length > 2 && (a.children = arguments.length > 3 ? Rt.call(arguments, 2) : n), typeof e == "function" && e.defaultProps != null) for (i in e.defaultProps) a[i] === void 0 && (a[i] = e.defaultProps[i]);
   return dt(e, a, r, o, null);
 }
 function dt(e, t, n, r, o) {
@@ -1677,8 +1679,8 @@ function Wr(e) {
     return Wr(e);
   }
 }
-function Pn(e) {
-  (!e.__d && (e.__d = !0) && Je.push(e) && !$t.__r++ || Rn !== w.debounceRendering) && ((Rn = w.debounceRendering) || Fr)($t);
+function Rn(e) {
+  (!e.__d && (e.__d = !0) && Je.push(e) && !$t.__r++ || Pn !== w.debounceRendering) && ((Pn = w.debounceRendering) || Fr)($t);
 }
 function $t() {
   for (var e; $t.__r = Je.length; ) e = Je.sort(function(t, n) {
@@ -1814,7 +1816,7 @@ function Go(e, t, n, r, o, i, a, u) {
   }
   if (h === null) f === d || u && e.data === d || (e.data = d);
   else {
-    if (i = i && Pt.call(e.childNodes), c = (f = n.props || kt).dangerouslySetInnerHTML, s = d.dangerouslySetInnerHTML, !u) {
+    if (i = i && Rt.call(e.childNodes), c = (f = n.props || kt).dangerouslySetInnerHTML, s = d.dangerouslySetInnerHTML, !u) {
       if (i != null) for (f = {}, p = 0; p < e.attributes.length; p++) f[e.attributes[p].name] = e.attributes[p].value;
       (s || c) && (s && (c && s.__html == c.__html || s.__html === e.innerHTML) || (e.innerHTML = s && s.__html || ""));
     }
@@ -1855,9 +1857,9 @@ function Qr(e, t, n) {
     e
   ]), o || kt, kt, t.ownerSVGElement !== void 0, !r && n ? [
     n
-  ] : o ? null : t.firstChild ? Pt.call(t.childNodes) : null, i, !r && n ? n : o ? o.__e : t.firstChild, r), Jr(i, e);
+  ] : o ? null : t.firstChild ? Rt.call(t.childNodes) : null, i, !r && n ? n : o ? o.__e : t.firstChild, r), Jr(i, e);
 }
-Pt = Ur.slice, w = {
+Rt = Ur.slice, w = {
   __e: function(e, t) {
     for (var n, r, o; t = t.__; ) if ((n = t.__c) && !n.__) try {
       if ((r = n.constructor) && r.getDerivedStateFromError != null && (n.setState(r.getDerivedStateFromError(e)), o = n.__d), n.componentDidCatch != null && (n.componentDidCatch(e), o = n.__d), o) return n.__E = n;
@@ -1868,9 +1870,9 @@ Pt = Ur.slice, w = {
   }
 }, Vr = 0, ie.prototype.setState = function(e, t) {
   var n;
-  n = this.__s != null && this.__s !== this.state ? this.__s : this.__s = ce({}, this.state), typeof e == "function" && (e = e(ce({}, n), this.props)), e && ce(n, e), e != null && this.__v && (t && this.__h.push(t), Pn(this));
+  n = this.__s != null && this.__s !== this.state ? this.__s : this.__s = ce({}, this.state), typeof e == "function" && (e = e(ce({}, n), this.props)), e && ce(n, e), e != null && this.__v && (t && this.__h.push(t), Rn(this));
 }, ie.prototype.forceUpdate = function(e) {
-  this.__v && (this.__e = !0, e && this.__h.push(e), Pn(this));
+  this.__v && (this.__e = !0, e && this.__h.push(e), Rn(this));
 }, ie.prototype.render = Ie, Je = [], Fr = typeof Promise == "function" ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, $t.__r = 0;
 var Jo = 0;
 function v(e, t, n, r, o) {
@@ -2340,7 +2342,7 @@ async function os(e) {
       }
     }
   }
-  u && Pe.reset(), ri();
+  u && Re.reset(), ri();
 }
 function oi(e, t, n) {
   e || (e = {});
@@ -2384,7 +2386,7 @@ async function cs(e, { maxResults: t, caller: n } = {}) {
     return c == s ? u.id.localeCompare(l.id) : c - s;
   }), i.length > t && (i = i.slice(0, t))), i;
 }
-var Pe = {
+var Re = {
   search: cs,
   get: as,
   reset: ls,
@@ -2619,10 +2621,10 @@ var St = {
 function tn(e) {
   let { id: t, skin: n, emoji: r } = e;
   if (e.shortcodes) {
-    const u = e.shortcodes.match(Pe.SHORTCODES_REGEX);
+    const u = e.shortcodes.match(Re.SHORTCODES_REGEX);
     u && (t = u[1], u[2] && (n = u[2]));
   }
-  if (r || (r = Pe.get(t || e.native)), !r) return e.fallback;
+  if (r || (r = Re.get(t || e.native)), !r) return e.fallback;
   const o = r.skins[n - 1] || r.skins[0], i = o.src || (e.set != "native" && !e.spritesheet ? typeof e.getImageURL == "function" ? e.getImageURL(e.set, o.unified) : `https://cdn.jsdelivr.net/npm/emoji-datasource-${e.set}@15.0.1/img/${e.set}/64/${o.unified}.png` : void 0), a = typeof e.getSpritesheetURL == "function" ? e.getSpritesheetURL(e.set) : `https://cdn.jsdelivr.net/npm/emoji-datasource-${e.set}@15.0.1/img/${e.set}/sheets-256/64.png`;
   return /* @__PURE__ */ v("span", {
     class: "emoji-mart-emoji",
@@ -3158,7 +3160,7 @@ class Ls extends ie {
   getEmojiByPos([t, n]) {
     const r = this.state.searchResults || this.grid, o = r[t] && r[t][n];
     if (o)
-      return Pe.get(o);
+      return Re.get(o);
   }
   observeCategories() {
     const t = this.refs.navigation.current;
@@ -3557,7 +3559,7 @@ class Ls extends ie {
                         height: this.props.emojiButtonSize
                       }
                     });
-                    const g = Pe.get(_);
+                    const g = Re.get(_);
                     return this.renderEmojiButton(g, {
                       pos: [
                         u.index,
@@ -3722,7 +3724,7 @@ class Ls extends ie {
     }), G(this, "handleSearchInput", async () => {
       const n = this.refs.searchInput.current;
       if (!n) return;
-      const { value: r } = n, o = await Pe.search(r), i = () => {
+      const { value: r } = n, o = await Re.search(r), i = () => {
         this.refs.scroll.current && (this.refs.scroll.current.scrollTop = 0);
       };
       if (!o) return this.setState({
@@ -4580,34 +4582,34 @@ function Ds(e, t) {
     }
   }
   vn();
-  var c = Ts(), s = j(c), f = R(j(s), 2), d = j(f), h = R(s, 2), p = j(h), _ = j(p), b = j(_);
+  var c = Ts(), s = j(c), f = P(j(s), 2), d = j(f), h = P(s, 2), p = j(h), _ = j(p), b = j(_);
   J(() => te(b, r()("tooltip.clear_history_msg")));
-  var g = R(_, 2), y = R(p, 2), E = j(y), L = j(E);
+  var g = P(_, 2), y = P(p, 2), E = j(y), L = j(E);
   J(() => te(L, r()("tooltip.minimize")));
-  var C = R(E, 2);
-  J(() => te(d, i())), Ye("click", g, l), Ye("click", C, u), N(e, c), Rt();
+  var C = P(E, 2);
+  J(() => te(d, i())), Ye("click", g, l), Ye("click", C, u), N(e, c), Pt();
 }
-var Rs = /* @__PURE__ */ W("<del><!></del>"), Ps = /* @__PURE__ */ W("<div><b> </b> <img> <span> </span><br> <b>Cena:</b> <!> <b><!></b></div><br>", 1), Is = /* @__PURE__ */ W("<div><p> </p> <br> <!> <p> </p></div>");
+var Ps = /* @__PURE__ */ W("<del><!></del>"), Rs = /* @__PURE__ */ W("<div><b> </b> <img> <span> </span><br> <b>Price:</b> <!> <b><!></b></div><br>", 1), Is = /* @__PURE__ */ W("<div><p> </p> <br> <!> <p> </p></div>");
 function As(e, t) {
   Dt(t, !1);
   let n = q(t, "data", 8);
   vn();
-  var r = Is(), o = j(r), i = j(o), a = R(o, 4);
-  Ir(a, 1, () => n().list, Pr, (c, s) => {
-    var f = Ps(), d = Ke(f), h = j(d), p = j(h), _ = R(h, 2), b = R(_, 2), g = j(b), y = R(b, 5);
+  var r = Is(), o = j(r), i = j(o), a = P(o, 4);
+  Ir(a, 1, () => n().list, Rr, (c, s) => {
+    var f = Rs(), d = Ke(f), h = j(d), p = j(h), _ = P(h, 2), b = P(_, 2), g = j(b), y = P(b, 5);
     Me(y, () => m(s).regular_price !== "", (C) => {
-      var A = Rs(), H = j(A);
+      var A = Ps(), H = j(A);
       Jt(H, () => m(s).regular_price), N(C, A);
     });
-    var E = R(y, 2), L = j(E);
+    var E = P(y, 2), L = j(E);
     Jt(L, () => m(s).price), J(() => {
       te(p, m(s).title), yt(_, "src", m(s).image_url), yt(_, "alt", m(s).title), te(g, m(s).description);
     }), N(c, f);
   });
-  var u = R(a, 2), l = j(u);
+  var u = P(a, 2), l = j(u);
   J(() => {
     te(i, n().header), te(l, n().footer);
-  }), N(e, r), Rt();
+  }), N(e, r), Pt();
 }
 var Bs = /* @__PURE__ */ W("<div><p> </p></div>");
 function Os(e, t) {
@@ -4629,7 +4631,7 @@ function Gs(e, t) {
   Bo(() => (Object.entries(d()).forEach(([S, k]) => {
     const K = `--chat-${S.replace(/_/g, "-").toLowerCase()}`;
     m(h).style.setProperty(K, k);
-  }), a(a() ?? "Chatbot"), u(u() ?? "Hi there! 👋 <br> How can I assist you today?"), c(c() ?? "Message..."), l(JSON.parse(l(l() ?? "true"))), s(JSON.parse(s(s() ?? "true"))), b = m(_).scrollHeight, P(p, crypto.randomUUID()), E = new gn({
+  }), a(a() ?? "Chatbot"), u(u() ?? "Hi there! 👋 <br> How can I assist you today?"), c(c() ?? "Message..."), l(JSON.parse(l(l() ?? "true"))), s(JSON.parse(s(s() ?? "true"))), b = m(_).scrollHeight, R(p, crypto.randomUUID()), E = new gn({
     locale: f(),
     theme: "light",
     skinTonePosition: "none",
@@ -4710,10 +4712,10 @@ function Gs(e, t) {
     for (const k of r())
       k.content && k.content.message && k.content.message.name && S.add(k.content.message.name);
     S.forEach((k) => {
-      m(C)[k] || (A[k] ? P(C, {
+      m(C)[k] || (A[k] ? R(C, {
         ...m(C),
         [k]: A[k]
-      }) : (console.error(`Component not found: ${k}`), P(C, {
+      }) : (console.error(`Component not found: ${k}`), R(C, {
         ...m(C),
         [k]: "error"
       })));
@@ -4731,24 +4733,24 @@ function Gs(e, t) {
       return m(p);
     }
   });
-  var Bt = R(mn, 2), bn = j(Bt), hi = R(j(bn), 2), vi = j(hi);
+  var Bt = P(mn, 2), bn = j(Bt), hi = P(j(bn), 2), vi = j(hi);
   Jt(vi, u);
-  var pi = R(bn, 2);
-  Ir(pi, 1, r, Pr, (S, k) => {
+  var pi = P(bn, 2);
+  Ir(pi, 1, r, Rr, (S, k) => {
     let D = () => m(k).content, K = () => m(k).className, bi = () => m(k).err;
     var Ot = qs(), wi = j(Ot);
     Me(
       wi,
       () => K() === "user-message",
       (Ht) => {
-        var Fe = Ns(), Ue = Ke(Fe), Nt = j(Ue), qe = R(Ue, 2);
+        var Fe = Ns(), Ue = Ke(Fe), Nt = j(Ue), qe = P(Ue, 2);
         Me(qe, () => D().file.data, (me) => {
           var $e = Hs();
           J(() => yt($e, "src", `data:${D().file.mime_type ?? ""};base64,${D().file.data ?? ""}`)), N(me, $e);
         }), J(() => te(Nt, D().message)), N(Ht, Fe);
       },
       (Ht) => {
-        var Fe = Us(), Ue = R(Ke(Fe), 2), Nt = j(Ue);
+        var Fe = Us(), Ue = P(Ke(Fe), 2), Nt = j(Ue);
         Me(
           Nt,
           () => m(C)[D().message.name] && m(C)[D().message.name] !== "error",
@@ -4778,19 +4780,19 @@ function Gs(e, t) {
               !0
             ), N(qe, me);
           }
-        ), J(() => Po(Ue, "error", bi())), N(Ht, Fe);
+        ), J(() => Ro(Ue, "error", bi())), N(Ht, Fe);
       }
     ), J(() => Do(Ot, `message ${K() ?? ""}`)), N(S, Ot);
-  }), st(Bt, (S) => P(g, S), () => m(g));
-  var _i = R(Bt, 2), wn = j(_i), Ve = j(wn);
-  st(Ve, (S) => P(_, S), () => m(_));
-  var gi = R(Ve, 2), yn = j(gi);
+  }), st(Bt, (S) => R(g, S), () => m(g));
+  var _i = P(Bt, 2), wn = j(_i), Ve = j(wn);
+  st(Ve, (S) => R(_, S), () => m(_));
+  var gi = P(Ve, 2), yn = j(gi);
   Me(yn, s, (S) => {
     var k = Ws();
     N(S, k);
   });
-  var mi = R(yn, 2);
-  st(wn, (S) => P(y, S), () => m(y)), st(At, (S) => P(h, S), () => m(h)), J(() => yt(Ve, "placeholder", c())), Ye("keydown", Ve, ee), Ye("input", Ve, ge), Ye("click", mi, z), N(e, At), Rt();
+  var mi = P(yn, 2);
+  st(wn, (S) => R(y, S), () => m(y)), st(At, (S) => R(h, S), () => m(h)), J(() => yt(Ve, "placeholder", c())), Ye("keydown", Ve, ee), Ye("input", Ve, ge), Ye("click", mi, z), N(e, At), Pt();
 }
 function Ys({ webhook_url: e, title: t, initial_greeting: n, image_upload: r, input_placeholder: o, emoji: i, locale: a, styles: u }) {
   let l = document.querySelector(".chatbot-container");

@@ -50,7 +50,7 @@ function chatbot_admin_enqueue_scripts($hook) {
         'chatbot-settings-admin-script',
         plugins_url('assets/js/admin-panel.min.js', dirname(__FILE__, 1)),
         array(), 
-        '1.4.7',
+        '1.4.8',
         true
     );
 

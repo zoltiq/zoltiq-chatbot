@@ -56,7 +56,7 @@ function chatbot_html($options) {
 	));
     
     // Retrieve the URL for the ES6 module
-    $module_url = plugins_url('assets/js/chat.bundle.es.js?45', dirname(__FILE__, 1));
+    $module_url = plugins_url('assets/js/chat.bundle.es.js?46', dirname(__FILE__, 1));
     
     $inline_module_script = "
     	import { createChat } from '{$module_url}';

@@ -31,11 +31,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 /* Initialize plugin update checker */
-$myUpdateChecker = PucFactory::buildUpdateChecker(
-	'https://plugins.zoltiq.com/chatbot/details.json',
-	__FILE__,
-	'zoltiq-chatbot'
+$details_url = 'https://plugins.zoltiq.com/chatbot/details-'. get_locale() .'.json';
+
+$updateChecker = PucFactory::buildUpdateChecker(
+  $details_url,
+  __FILE__,
+  'zoltiq-chatbot'
 );
+
 
 
 /**
